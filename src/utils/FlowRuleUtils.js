@@ -167,7 +167,7 @@ async function minDistanceRoute(timeout) {
                 appId: ONOS_APPID,
                 priority: 10,
                 isPermanent: false,
-                timeout: timeout,
+                timeout: timeout??60,
                 deviceId: path.id,
                 treatment: {
                     instructions: [
@@ -191,5 +191,5 @@ async function minDistanceRoute(timeout) {
     // console.log(flows)
     postBatchFlows({ flows: flows });
 }
-
+minDistanceRoute();
 // test();
