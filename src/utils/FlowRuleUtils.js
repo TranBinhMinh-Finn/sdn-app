@@ -150,7 +150,7 @@ export function MinDistanceRule(hostList, deviceList, linkList) {
 
 const ONOS_APPID = "org.onosproject.proxyarp";
 
-async function minDistanceRoute() {
+async function minDistanceRoute(timeout) {
     let hostList = await getHosts();
     let deviceList = await getDevices();
     let linkList = await getLinks();
@@ -161,14 +161,13 @@ async function minDistanceRoute() {
     );
 
     let flows = [];
-    console.log(result);
     result.forEach((pathObject) => {
         pathObject.path.forEach((path) => {
             flows.push({
                 appId: ONOS_APPID,
                 priority: 10,
                 isPermanent: false,
-                timeout: 60,
+                timeout: timeout,
                 deviceId: path.id,
                 treatment: {
                     instructions: [
