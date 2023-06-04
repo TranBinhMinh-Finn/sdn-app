@@ -1,27 +1,14 @@
 import {useState, useEffect} from 'react'
 import axios from 'axios'
 import './App.css';
+import {getDevices} from "./utils/NetworkUtils";
 
 function App() {
     const [data, setData] = useState();
-    const [error, setError] = useState();
-    const header = {
-        Authorization: 'Basic b25vczpyb2Nrcw==',
-        mode: 'no-cors',
-    }
-    const config = {
-        headers: header
-    }
     useEffect(() => {
-        axios.get("http://127.0.0.1:8181/onos/v1/devices", {
-            headers: header
-        })
-            .then((response) => {
-                setData(response.data);
-                // console.log(data)
-                setError(null);
-            })
-            .catch(setError);
+        getDevices().then((res) => {
+            setData(res.data);
+        }).catch((err) => {});
     }, []);
 
     return (

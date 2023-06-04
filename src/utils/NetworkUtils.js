@@ -5,7 +5,7 @@ const ENDPOINTS = {
     DEVICES: '/onos/v1/devices',
     HOSTS: '/onos/v1/hosts',
 }
-const address = "127.0.0.1";
+const address = "192.168.242.131";
 const port = "8181";
 const url = `http://${address}:${port}`;
 const username = "onos";
