@@ -110,16 +110,18 @@ export function MinDistanceRule(hostList, deviceList, linkList)
             if( i !== j && distances[src][dst] !== MAX_DISTANCE)
             {
                 let v = dst;
+                let child = v;
                 while(v !== src)
                 {
                     let parent = trace[src][v].id;
                     path.push(
                         {
                             id: v,
-                            port_out: trace[parent][v].port,
+                            port_out: trace[v][child].port,
                             port_in: trace[v][parent].port,
                         }
                     );
+                    child = v;
                     v = parent;
                 }
                 path.push(
