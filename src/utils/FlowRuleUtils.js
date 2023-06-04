@@ -164,7 +164,7 @@ async function minDistanceRoute(timeout) {
     result.forEach((pathObject) => {
         pathObject.path.forEach((path) => {
             flows.push({
-                appId: ONOS_APPID,
+                // appId: ONOS_APPID,
                 priority: 10,
                 isPermanent: false,
                 timeout: timeout??60,
@@ -191,5 +191,5 @@ async function minDistanceRoute(timeout) {
     // console.log(flows)
     postBatchFlows({ flows: flows });
 }
-// minDistanceRoute();
+minDistanceRoute();
 // test();
