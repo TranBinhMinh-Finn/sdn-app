@@ -13,7 +13,7 @@ function App() {
         headers: header
     }
     useEffect(() => {
-        axios.get("http://192.168.242.131:8181/onos/v1/devices", {
+        axios.get("http://127.0.0.1:8181/onos/v1/devices", {
             headers: header
         })
             .then((response) => {
