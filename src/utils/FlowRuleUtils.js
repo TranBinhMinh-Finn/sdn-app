@@ -191,5 +191,5 @@ async function minDistanceRoute(timeout) {
     // console.log(flows)
     postBatchFlows({ flows: flows });
 }
-minDistanceRoute();
+// minDistanceRoute();
 // test();
