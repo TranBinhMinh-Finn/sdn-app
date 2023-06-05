@@ -1,5 +1,5 @@
 ﻿import { allSettled, async } from "q";
-import { getDevices, getHosts, getLinks, postBatchFlows } from "./NetworkUtils";
+import { getDevices, getHosts, getLinks, getPaths, postBatchFlows } from "./NetworkUtils";
 /*
     return: [Object] && Object = {
         src: [String],
@@ -413,3 +413,27 @@ export async function AddCustomRule(routes) {
 //     // console.log(res);
 // }
 // test();
+
+async function showPath(srcId, dstId)
+{
+    let res = await getPaths(srcId, dstId);
+    res = res.data;
+    // console.log(res);
+    let path = res.paths[0].links;
+    // console.log(path);
+    let output = [];
+    if(path == null) return [];
+
+    path.forEach((element, index) => {
+        if(index === 0)
+        {
+            output.push(element.src.device);
+            output.push(element.dst.device);
+        }
+        else
+        {
+            output.push(element.dst.device);
+        }
+    })
+    return output;
+}

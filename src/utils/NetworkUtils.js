@@ -5,8 +5,9 @@ const ENDPOINTS = {
     DEVICES: "/onos/v1/devices",
     HOSTS: "/onos/v1/hosts",
     FLOWS: "/onos/v1/flows",
+    PATHS: "/onos/v1/paths"
 };
-const address = "192.168.58.128";
+const address = "192.168.242.131";
 const port = "8181";
 const url = `http://${address}:${port}`;
 const username = "onos";
@@ -38,6 +39,11 @@ export function getHosts() {
     return doGet(ENDPOINTS.HOSTS, {}, {});
 }
 
+export function getPaths(srcId, dstId)
+{
+    return doGet(`${ENDPOINTS.PATHS}/${srcId}/${dstId}`, {}, {});
+}
+
 export function doPost(endpoint, headers, params, data) {
     let sendHeaders = {};
     Object.assign(sendHeaders, baseHeaders, headers);
@@ -53,7 +59,7 @@ export function doPost(endpoint, headers, params, data) {
 
 export function postBatchFlows(data) {
     // console.log(JSON.stringify(data).length);
-    console.log(data);
+    // console.log(data);
     return doPost(
         ENDPOINTS.FLOWS,
         {'Content-Type': "application/json"},
