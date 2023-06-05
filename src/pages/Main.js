@@ -1,49 +1,45 @@
 import React, { useState } from "react";
-import { styled } from "@mui/system";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
-
-const StyledButton = styled(Button)`
-  background-color: green;
-  width: 150px;
-  height: 50px;
-  border: none;
-  border-radius: 10px;
-  color: white;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-`;
-
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardActions from '@mui/material/CardActions';
+import Grid from "@mui/material/Grid";
+import Typography from '@mui/material/Typography';
+import { MinDistanceRoute } from '../utils/FlowRuleUtils'
 function MainPage() {
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState(60);
 
   const handleSubmit = () => {
-    if (inputValue) {
-      new Notification("Input Value", {
-        body: inputValue,
-      });
-    }
+    MinDistanceRoute(parseInt(inputValue))
+    .then(
+        alert("Add flow successful")
+    ).catch(
+        err => alert("Add flow unsuccessful")
+    )
   };
 
   return (
-    <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      minHeight="100vh"
-    >
-      <TextField
-        label="Input"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-      />
-      <Button variant="contained" onClick={handleSubmit}>Submit</Button>
-    </Box>
+    <Grid container justifyContent="center" alignItems="center" style={{ minHeight: "100vh" }}>
+    <Card sx={{ maxWidth: 345 }}>
+      <CardContent>
+        <Typography variant="h5" component="div">
+            Default Flow (Dijkstra)
+        </Typography>
+    </CardContent>
+    <CardContent>
+        <TextField
+            label="Delay"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+        />
+      </CardContent>
+      <CardActions>
+        <Button variant="contained" onClick={handleSubmit}>Set Default Flow</Button>
+      </CardActions>
+    </Card>
+    </Grid>
   );
-
 }
 
 export default MainPage;
