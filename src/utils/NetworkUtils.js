@@ -7,7 +7,7 @@ const ENDPOINTS = {
     FLOWS: "/onos/v1/flows",
     PATHS: "/onos/v1/paths"
 };
-const address = "192.168.242.131";
+const address = "192.168.58.128";
 const port = "8181";
 const url = `http://${address}:${port}`;
 const username = "onos";
