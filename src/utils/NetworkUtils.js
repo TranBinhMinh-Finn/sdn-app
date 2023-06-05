@@ -6,7 +6,7 @@ const ENDPOINTS = {
     HOSTS: "/onos/v1/hosts",
     FLOWS: "/onos/v1/flows",
 };
-const address = "192.168.58.128";
+const address = "192.168.242.131";
 const port = "8181";
 const url = `http://${address}:${port}`;
 const username = "onos";

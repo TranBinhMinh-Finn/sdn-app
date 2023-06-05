@@ -1,4 +1,5 @@
-﻿import { getDevices, getHosts, getLinks, postBatchFlows } from "./NetworkUtils";
+﻿import { allSettled, async } from "q";
+import { getDevices, getHosts, getLinks, postBatchFlows } from "./NetworkUtils";
 /*
     return: [Object] && Object = {
         src: [String],
@@ -15,14 +16,9 @@
 
 const ONOS_APPID = "org.onosproject.proxyarp";
 
-export function MinDistanceRule(hostList, deviceList, linkList) {
-    // create adjacent list
+function createAdList(hostList, deviceList, linkList) 
+{
     let adList = {};
-    let distances = {};
-    let trace = {};
-
-    const MAX_DISTANCE = 1000000000;
-
     deviceList.forEach((device) => {
         adList[device.id] = [];
     });
@@ -51,7 +47,19 @@ export function MinDistanceRule(hostList, deviceList, linkList) {
         }
     });
 
-    // console.log(adList);
+    return JSON.parse(JSON.stringify(adList));
+}
+
+export function MinDistanceRule(hostList, deviceList, linkList) 
+{
+    // create adjacent list
+    let adList = createAdList(hostList, deviceList, linkList);
+    let distances = {};
+    let trace = {};
+
+    const MAX_DISTANCE = 1000000000;
+
+    
 
     // create a map for distance
     for (let id in adList) {
@@ -189,8 +197,136 @@ export async function MinDistanceRoute(timeout) {
             });
         });
     });
-    // console.log(flows)
+
     postBatchFlows({ flows: flows });
 }
-//MinDistanceRoute();
+
+export async function CustomRule(routes)
+{
+    let hostList = await getHosts();
+    let deviceList = await getDevices();
+    let linkList = await getLinks();
+
+    hostList = hostList.data["hosts"];
+    deviceList = deviceList.data["devices"];
+    linkList = linkList.data["links"];
+
+    let isValid = true;
+    
+    let isValidRoute = () => {
+        if(routes.length < 2) return false;
+        
+        let ok = 0 ;
+        hostList.forEach((host) =>{
+            // console.log(host.mac+" -- "+routes[0]);
+            if(host.mac == routes[0] || host.mac == routes[routes.length - 1]) ok++;
+        });
+        if(ok != 2) return false;
+    }
+
+    isValid = isValidRoute();
+    if(isValid === false) return {};
+    let output = {
+        src: routes[0],
+        src_port_out: null,
+        dst: routes[routes.length - 1],
+        dst_port_in: null,
+        path: []
+    }
+    
+    // console.log(routes);
+    routes.forEach((route, index) => {
+        if(index !== 0 && index !== routes.length - 1)
+        {
+            output.path.push(
+                {
+                    id: route,
+                    port_in: null,
+                    port_out: null
+                }
+            );
+        }
+    });
+
+    let adList = createAdList(hostList, deviceList, linkList);
+    output.path.forEach((route, index) => {
+        if(index === 0)
+        {
+            adList[output.src].forEach((element) =>{
+                if(element.id == route.id)
+                {
+                    output.src_port_out = element.port
+                    output.path[index].port_in = element.port;
+                }
+            });
+        }
+        if(index == output.path.length - 1)
+        {
+            adList[output.dst].forEach((element) =>{
+                if(element.id == route.id)
+                {
+                    output.dst_port_in = element.port
+                    output.path[index].port_out = element.port;
+                }
+            });
+        }
+            
+
+        if(index !== output.path.length - 1)
+        {
+            adList[route.id].forEach((element) =>{
+                if(element.id == output.path[index+1].id)
+                {
+                    output.path[index].port_out = element.port;
+                }
+            });
+
+            adList[output.path[index+1].id].forEach((element) => {
+                if(element.id == route.id)
+                {
+                    output.path[index+1].port_in = element.port; 
+                }
+            });
+        }
+        
+
+    });
+
+   // console.log(output);
+    
+    let isValidOutput = () =>{
+        if(output.src_port_out == null || output.dst_port_in == null) return false;
+        let ok = true;
+        output.path.forEach((element) => {
+            if(element.id == null || element.port_in == null || element.port_out == null) ok = false;
+        });
+
+        return ok;
+    }
+
+    if(isValidOutput() === false) return {};
+    return output;
+}
+
+// async function test()
+// {
+//     let hostList = await getHosts();
+//     let deviceList = await getDevices();
+//     let linkList = await getLinks();
+//     let output = MinDistanceRule(
+//         hostList.data["hosts"],
+//         deviceList.data["devices"],
+//         linkList.data["links"]
+//     );
+//     let _test = [output[0].src];
+//     output[0].path.forEach((element) => {
+//         _test.push(element.id);
+//     })
+//     _test.push(output[0].dst);
+//     // console.log(output[0]);
+//     let res = await CustomRule(
+//         _test
+//     );
+//     // console.log(res);
+// }
 // test();
