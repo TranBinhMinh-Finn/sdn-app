@@ -383,6 +383,7 @@ export async function AddCustomRule(routes) {
     };
 
     let pathObject = await CustomRule(routes);
+    console.log(pathObject);
     if (isObjectEmpty(pathObject)) {
         return false;
     }
@@ -414,7 +415,7 @@ export async function AddCustomRule(routes) {
 // }
 // test();
 
-async function showPath(srcId, dstId)
+export async function showPath(srcId, dstId)
 {
     let res = await getPaths(srcId, dstId);
     res = res.data;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
@@ -8,15 +8,15 @@ import Grid from "@mui/material/Grid";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Typography from '@mui/material/Typography';
-import { MinDistanceRoute, AddCustomRule } from '../utils/FlowRuleUtils'
+import { MinDistanceRoute, AddCustomRule, showPath } from '../utils/FlowRuleUtils'
 import { getDevices, getHosts, postBatchFlows } from "../utils/NetworkUtils";
 
 function MainPage() {
   const [inputValue, setInputValue] = useState(60);
 
   const [deviceId, setDeviceId] = useState();
-  const [startDevice, setStartDevice] = useState();
-  const [destinationDevice, setDestinationDevice] = useState();
+  const startDevice = useRef();
+  const destinationDevice = useRef();
   const [path, setPath] = useState();
   const [hosts, setHosts] = useState([]);
   const [devices, setDevices] = useState([]);
@@ -79,8 +79,13 @@ function MainPage() {
   }
 
   const handleSubmitPaths = () => {
-    console.log(startDevice)
-    console.log(destinationDevice)
+    console.log(startDevice.current)
+    console.log(destinationDevice.current)
+    showPath(startDevice.current.value, destinationDevice.current.value).then((res) => {
+      // console.log(res);
+      setPath(JSON.stringify(res));
+    });
+    // setPath(await )
   }
 
   return (
@@ -144,8 +149,9 @@ function MainPage() {
         <CardContent>
         <div>
         <Select
-            value={startDevice}
-            onChange={setStartDevice}
+            inputRef={startDevice}
+            // value={startDevice}
+            // onChange={setStartDevice}
           >
             {devices.map(device => (
                 <MenuItem key = {device.id} value={device.id}>Device: {device.id}</MenuItem>
@@ -154,8 +160,9 @@ function MainPage() {
         </div>
         <div>
         <Select
-            value={destinationDevice}
-            onChange={setDestinationDevice}
+          inputRef={destinationDevice}
+            // value={destinationDevice}
+            // onChange={setDestinationDevice}
           >
             {devices.map(device => (
                 <MenuItem key = {device.id} value={device.id}>Device: {device.id}</MenuItem>
@@ -165,13 +172,13 @@ function MainPage() {
         
         </CardContent>
         <CardActions>
-            <Button variant="contained" onClick={addSelectElement}>
+            <Button variant="contained" onClick={handleSubmitPaths}>
                 Get Paths
             </Button>
         </CardActions>
         <CardContent>
             <Typography variant="p" component="div">
-                result
+                {path}
             </Typography>
         </CardContent>
     </Card>
