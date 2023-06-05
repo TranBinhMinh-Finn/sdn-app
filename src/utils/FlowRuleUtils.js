@@ -12,6 +12,9 @@
         } 
     }
  */
+
+const ONOS_APPID = "org.onosproject.proxyarp";
+
 export function MinDistanceRule(hostList, deviceList, linkList) {
     // create adjacent list
     let adList = {};
@@ -148,9 +151,7 @@ export function MinDistanceRule(hostList, deviceList, linkList) {
     return output;
 }
 
-const ONOS_APPID = "org.onosproject.proxyarp";
-
-async function minDistanceRoute(timeout) {
+export async function MinDistanceRoute(timeout) {
     let hostList = await getHosts();
     let deviceList = await getDevices();
     let linkList = await getLinks();
@@ -167,7 +168,7 @@ async function minDistanceRoute(timeout) {
                 // appId: ONOS_APPID,
                 priority: 10,
                 isPermanent: false,
-                timeout: timeout??60,
+                timeout: isNaN(timeout) ? 60 : timeout,
                 deviceId: path.id,
                 treatment: {
                     instructions: [
@@ -191,5 +192,5 @@ async function minDistanceRoute(timeout) {
     // console.log(flows)
     postBatchFlows({ flows: flows });
 }
-minDistanceRoute();
+//MinDistanceRoute();
 // test();
