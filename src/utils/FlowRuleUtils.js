@@ -14,6 +14,8 @@
  */
 
 const ONOS_APPID = "org.onosproject.proxyarp";
+const DEFAULT_FLOW_PRIORITY = 10;
+const CUSTOM_FLOW_PRIORITY = 55;
 
 export function MinDistanceRule(hostList, deviceList, linkList) {
     // create adjacent list
@@ -162,11 +164,12 @@ export async function MinDistanceRoute(timeout) {
     );
 
     let flows = [];
+    // console.log(JSON.stringify(result[15]));
     result.forEach((pathObject) => {
         pathObject.path.forEach((path) => {
             flows.push({
                 // appId: ONOS_APPID,
-                priority: 10,
+                priority: DEFAULT_FLOW_PRIORITY,
                 isPermanent: false,
                 timeout: isNaN(timeout) ? 60 : timeout,
                 deviceId: path.id,
@@ -192,5 +195,51 @@ export async function MinDistanceRoute(timeout) {
     // console.log(flows)
     postBatchFlows({ flows: flows });
 }
+
+export async function addCustomFlowByMacdstAndPortout(pathObject, timeout) {
+    let flows = [];
+    pathObject.path.forEach((path) => {
+        flows.push({
+            priority: CUSTOM_FLOW_PRIORITY,
+            isPermanent: false,
+            timeout: isNaN(timeout) ? 60 : timeout,
+            deviceId: path.id,
+            treatment: {
+                instructions: [
+                    {
+                        type: "OUTPUT",
+                        port: path.port_out,
+                    },
+                ],
+            },
+            selector: {
+                criteria: [
+                    {
+                        type: "ETH_DST",
+                        mac: pathObject.dst,
+                    },
+                ],
+            },
+        });
+    });
+
+    postBatchFlows({ flows: flows });
+}
+/* region example 
+addCustomFlowByMacdstAndPortout(
+    {
+        src: "00:00:00:00:00:09",
+        src_port_out: "1",
+        dst: "00:00:00:00:00:01",
+        dst_port_in: "1",
+        path: [
+            { id: "of:0000000000000009", port_out: "3" },
+            { id: "of:0000000000000003", port_out: "4" },
+            { id: "of:000000000000000a", port_out: "3" },
+            { id: "of:0000000000000001", port_out: "1" },
+        ],
+    },
+    60
+); */
 //MinDistanceRoute();
 // test();
