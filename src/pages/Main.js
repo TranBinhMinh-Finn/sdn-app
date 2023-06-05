@@ -42,6 +42,10 @@ function MainPage() {
     }
     retrieve()
   }, []);
+
+  useEffect(() => {
+    console.log('selectedOptions is updated:', selectedOptions);
+  }, [selectedOptions]);
   
   const addSelectElement = () => {
     setSelectCount(selectCount + 1);
