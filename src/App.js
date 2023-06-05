@@ -1,23 +1,16 @@
-import {useState, useEffect} from 'react'
-import './App.css';
-import {getDevices} from "./utils/NetworkUtils";
+import React from "react";
+import MainPage from "./pages/Main";
 
 function App() {
-    const [data, setData] = useState();
-    useEffect(() => {
-        getDevices().then((res) => {
-            setData(res.data);
-        }).catch((err) => {});
-    }, []);
+  React.useEffect(() => {
+    Notification.requestPermission();
+  }, []);
 
-    return (
-        <div>
-            <p>
-                {JSON.stringify(data)}
-            </p>
-
-        </div>
-    );
+  return (
+    <div>
+      <MainPage />
+    </div>
+  );
 }
 
 export default App;
