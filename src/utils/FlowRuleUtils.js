@@ -18,8 +18,7 @@ const ONOS_APPID = "org.onosproject.proxyarp";
 const DEFAULT_FLOW_PRIORITY = 10;
 const CUSTOM_FLOW_PRIORITY = 55;
 
-function createAdList(hostList, deviceList, linkList) 
-{
+function createAdList(hostList, deviceList, linkList) {
     let adList = {};
     deviceList.forEach((device) => {
         adList[device.id] = [];
@@ -52,16 +51,13 @@ function createAdList(hostList, deviceList, linkList)
     return JSON.parse(JSON.stringify(adList));
 }
 
-export function MinDistanceRule(hostList, deviceList, linkList) 
-{
+export function MinDistanceRule(hostList, deviceList, linkList) {
     // create adjacent list
     let adList = createAdList(hostList, deviceList, linkList);
     let distances = {};
     let trace = {};
 
     const MAX_DISTANCE = 1000000000;
-
-    
 
     // create a map for distance
     for (let id in adList) {
@@ -204,9 +200,10 @@ export async function MinDistanceRoute(timeout) {
     postBatchFlows({ flows: flows });
 }
 
-export async function addCustomFlowByMacdstAndPortout(pathObject, timeout) {
+export function postCustomRoute(pathObject, timeout) {
     let flows = [];
     pathObject.path.forEach((path) => {
+        // #region flow xuôi
         flows.push({
             priority: CUSTOM_FLOW_PRIORITY,
             isPermanent: false,
@@ -229,12 +226,38 @@ export async function addCustomFlowByMacdstAndPortout(pathObject, timeout) {
                 ],
             },
         });
-    });
+        //#endregion
+        
+        // #region flow ngược
+        flows.push({
+            priority: CUSTOM_FLOW_PRIORITY,
+            isPermanent: false,
+            timeout: isNaN(timeout) ? 60 : timeout,
+            deviceId: path.id,
+            treatment: {
+                instructions: [
+                    {
+                        type: "OUTPUT",
+                        port: path.port_in,
+                    },
+                ],
+            },
+            selector: {
+                criteria: [
+                    {
+                        type: "ETH_DST",
+                        mac: pathObject.src,
+                    },
+                ],
+            },
+        });
+        //#endregion
+    }); 
 
     postBatchFlows({ flows: flows });
 }
-/* region example 
-addCustomFlowByMacdstAndPortout(
+/* 
+postCustomRoute(
     {
         src: "00:00:00:00:00:09",
         src_port_out: "1",
@@ -250,8 +273,7 @@ addCustomFlowByMacdstAndPortout(
     60
 ); */
 //MinDistanceRoute();
-export async function CustomRule(routes)
-{
+export async function CustomRule(routes) {
     let hostList = await getHosts();
     let deviceList = await getDevices();
     let linkList = await getLinks();
@@ -261,101 +283,102 @@ export async function CustomRule(routes)
     linkList = linkList.data["links"];
 
     let isValid = true;
-    
+
     let isValidRoute = () => {
-        if(routes.length < 2) return false;
-        
-        let ok = 0 ;
-        hostList.forEach((host) =>{
+        if (routes.length < 2) return false;
+
+        let ok = 0;
+        hostList.forEach((host) => {
             // console.log(host.mac+" -- "+routes[0]);
-            if(host.mac == routes[0] || host.mac == routes[routes.length - 1]) ok++;
+            if (host.mac == routes[0] || host.mac == routes[routes.length - 1])
+                ok++;
         });
-        if(ok != 2) return false;
-    }
+        if (ok != 2) return false;
+    };
 
     isValid = isValidRoute();
-    if(isValid === false) return {};
+    if (isValid === false) return {};
     let output = {
         src: routes[0],
         src_port_out: null,
         dst: routes[routes.length - 1],
         dst_port_in: null,
-        path: []
-    }
-    
+        path: [],
+    };
+
     // console.log(routes);
     routes.forEach((route, index) => {
-        if(index !== 0 && index !== routes.length - 1)
-        {
-            output.path.push(
-                {
-                    id: route,
-                    port_in: null,
-                    port_out: null
-                }
-            );
+        if (index !== 0 && index !== routes.length - 1) {
+            output.path.push({
+                id: route,
+                port_in: null,
+                port_out: null,
+            });
         }
     });
 
     let adList = createAdList(hostList, deviceList, linkList);
     output.path.forEach((route, index) => {
-        if(index === 0)
-        {
-            adList[output.src].forEach((element) =>{
-                if(element.id == route.id)
-                {
-                    output.src_port_out = element.port
+        if (index === 0) {
+            adList[output.src].forEach((element) => {
+                if (element.id == route.id) {
+                    output.src_port_out = element.port;
                     output.path[index].port_in = element.port;
                 }
             });
         }
-        if(index == output.path.length - 1)
-        {
-            adList[output.dst].forEach((element) =>{
-                if(element.id == route.id)
-                {
-                    output.dst_port_in = element.port
+        if (index == output.path.length - 1) {
+            adList[output.dst].forEach((element) => {
+                if (element.id == route.id) {
+                    output.dst_port_in = element.port;
                     output.path[index].port_out = element.port;
                 }
             });
         }
-            
 
-        if(index !== output.path.length - 1)
-        {
-            adList[route.id].forEach((element) =>{
-                if(element.id == output.path[index+1].id)
-                {
+        if (index !== output.path.length - 1) {
+            adList[route.id].forEach((element) => {
+                if (element.id == output.path[index + 1].id) {
                     output.path[index].port_out = element.port;
                 }
             });
 
-            adList[output.path[index+1].id].forEach((element) => {
-                if(element.id == route.id)
-                {
-                    output.path[index+1].port_in = element.port; 
+            adList[output.path[index + 1].id].forEach((element) => {
+                if (element.id == route.id) {
+                    output.path[index + 1].port_in = element.port;
                 }
             });
         }
-        
-
     });
 
-   // console.log(output);
-    
-    let isValidOutput = () =>{
-        if(output.src_port_out == null || output.dst_port_in == null) return false;
+    // console.log(output);
+
+    let isValidOutput = () => {
+        if (output.src_port_out == null || output.dst_port_in == null)
+            return false;
         let ok = true;
         output.path.forEach((element) => {
-            if(element.id == null || element.port_in == null || element.port_out == null) ok = false;
+            if (
+                element.id == null ||
+                element.port_in == null ||
+                element.port_out == null
+            )
+                ok = false;
         });
 
         return ok;
-    }
+    };
 
-    if(isValidOutput() === false) return {};
+    if (isValidOutput() === false) return {};
     return output;
 }
+
+export async function AddCustomRule(routes) {
+    let pathObject = await CustomRule(routes);
+    postCustomRoute(pathObject);
+}
+// AddCustomRule(["00:00:00:00:00:09", "of:0000000000000009", "of:0000000000000003", "of:000000000000000a", "of:0000000000000001", "00:00:00:00:00:01"])
+
 
 // async function test()
 // {
