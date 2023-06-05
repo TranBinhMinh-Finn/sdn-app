@@ -22,7 +22,8 @@ function MainPage() {
   const [devices, setDevices] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [selectCount, setSelectCount] = useState(0);
-
+  const src = useRef();
+  const dst = useRef();
   const updateFieldChanged = index => e => {
     //console.log('index: ' + index);
     //console.log('property name: '+ e.target.name);
@@ -63,18 +64,23 @@ function MainPage() {
   const handleSubmitDefault = () => {
     MinDistanceRoute(parseInt(inputValue))
     .then(
-        alert("Add flow successful")
+        alert("Add path successful")
     ).catch(
-        err => alert("Add flow unsuccessful")
+        err => alert("Add path failed")
     )
   };
 
   const handleSubmitFlow = () => {
-    const allResults = selectedOptions.flat();
-    AddCustomRule(allResults).then(
-        res => res ? alert("Add flow successful") : alert("Add flow unsuccessful")
+    let input = [src.current.value]
+    // console.log(input)
+    let allResults = selectedOptions.flat();
+    allResults.forEach((element) => {input.push(element)});
+    // console.log(input)
+    input.push(dst.current.value);
+    AddCustomRule(input).then(
+        res => res ? alert("Add path successful") : alert("Add path failed")
     ).catch(
-        err => alert("Add flow unsuccessful")
+        err => alert("Add path failed")
     );
   }
 
@@ -90,7 +96,7 @@ function MainPage() {
 
   return (
     <Grid container justifyContent="center" alignItems="center" style={{ minHeight: "100vh" }}>
-    <Card sx={{ maxWidth: 345 }}>
+    <Card sx={{ maxWidth: 345, margin: 10 }}>
       <CardContent>
         <Typography variant="h5" component="div">
             Default Flow (Dijkstra)
@@ -110,29 +116,71 @@ function MainPage() {
     <Card>
         <CardContent>
         <Typography variant="h5" component="div">
-            Add Flow
+            Add Custom Path
         </Typography>
         </CardContent>
         <CardContent>
-        {selectedOptions.map((selectedOption, index) => (
+          <div>
+            <p>
+              Source
+            </p>
+          <Select
+            // value={selectedOptions[index]}
+            // onChange={updateFieldChanged(index)}
+            inputRef={src}
+          >
+            {
+            hosts.map(host => (
+                <MenuItem key = {host.mac} value={host.mac}>Host: {host.ipAddresses[0]}</MenuItem>
+            ))
+            }
+          </Select>
+          </div>
+        
+        <div>
+          <p>
+            Desination
+          </p>
+        <Select
+            // value={selectedOptions[index]}
+            // onChange={updateFieldChanged(index)}
+            inputRef={dst}
+          >
+            {
+            hosts.map(host => (
+                <MenuItem key = {host.mac} value={host.mac}>Host: {host.ipAddresses[0]}</MenuItem>
+            ))
+            }
+          </Select>
+        </div>
+        <div>
+          <p>
+            Path
+          </p>
+          {selectedOptions.map((selectedOption, index) => (
         <div key={index}>
           <Select
             value={selectedOptions[index]}
             onChange={updateFieldChanged(index)}
           >
-            {hosts.map(host => (
-                <MenuItem key = {host.mac} value={host.mac}>Host: {host.ipAddresses[0]}</MenuItem>
-            ))}
+            
             {devices.map(device => (
                 <MenuItem key = {device.id} value={device.id}>Device: {device.id}</MenuItem>
             ))}
+            {/* {
+            hosts.map(host => (
+                <MenuItem key = {host.mac} value={host.mac}>Host: {host.ipAddresses[0]}</MenuItem>
+            ))
+            } */}
           </Select>
         </div>
         ))}
+        </div>
+        
         </CardContent>
         <CardActions>
             <Button variant="contained" onClick={addSelectElement}>
-                Add Host/Devices
+                Add Device to Path
             </Button>
             <Button variant="contained" onClick={removeElement}>
                 Remove
@@ -140,6 +188,7 @@ function MainPage() {
             <Button variant="contained" onClick={handleSubmitFlow}>Submit</Button>
         </CardActions>
     </Card>
+    {/*
     <Card>
         <CardContent>
         <Typography variant="h5" component="div">
@@ -182,6 +231,7 @@ function MainPage() {
             </Typography>
         </CardContent>
     </Card>
+    */}
     </Grid>
   );
 }
