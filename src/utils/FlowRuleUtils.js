@@ -227,7 +227,7 @@ export function postCustomRoute(pathObject, timeout) {
             },
         });
         //#endregion
-        
+
         // #region flow ngược
         flows.push({
             priority: CUSTOM_FLOW_PRIORITY,
@@ -252,7 +252,7 @@ export function postCustomRoute(pathObject, timeout) {
             },
         });
         //#endregion
-    }); 
+    });
 
     postBatchFlows({ flows: flows });
 }
@@ -372,13 +372,24 @@ export async function CustomRule(routes) {
     if (isValidOutput() === false) return {};
     return output;
 }
-
+/**
+ * 
+ * @param {array} routes 
+ * @returns Boolean - true: success - false: unsucess. Ex: invalid route 
+ */
 export async function AddCustomRule(routes) {
+    const isObjectEmpty = (objectName) => {
+        return Object.keys(objectName).length === 0;
+    };
+
     let pathObject = await CustomRule(routes);
+    if (isObjectEmpty(pathObject)) {
+        return false;
+    }
     postCustomRoute(pathObject);
+    return true;
 }
 // AddCustomRule(["00:00:00:00:00:09", "of:0000000000000009", "of:0000000000000003", "of:000000000000000a", "of:0000000000000001", "00:00:00:00:00:01"])
-
 
 // async function test()
 // {
